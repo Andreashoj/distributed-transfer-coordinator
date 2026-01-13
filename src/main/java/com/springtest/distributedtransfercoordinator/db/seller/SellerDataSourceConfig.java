@@ -3,6 +3,7 @@ package com.springtest.distributedtransfercoordinator.db.seller;
 import jakarta.persistence.EntityManagerFactory;
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,8 +14,6 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 @EnableJpaRepositories(
@@ -23,13 +22,25 @@ import java.util.Map;
         transactionManagerRef = "sellerTransactionManager"
 )
 public class SellerDataSourceConfig {
+    @Value("${spring.datasource.seller.url}")
+    private String url;
+
+    @Value("${spring.datasource.seller.username}")
+    private String username;
+
+    @Value("${spring.datasource.seller.password}")
+    private String password;
+
+    @Value("${spring.datasource.seller.driver-class-name}")
+    private String driverClassName;
+
     @Bean
     public DataSource sellerDataSource() {
         return DataSourceBuilder.create()
-                .url("jdbc:postgresql://localhost:5433/seller_db")
-                .username("seller_user")
-                .password("seller_password")
-                .driverClassName("org.postgresql.Driver")
+                .url(url)
+                .username(username)
+                .password(password)
+                .driverClassName(driverClassName)
                 .build();
     }
 
@@ -42,12 +53,6 @@ public class SellerDataSourceConfig {
         em.setDataSource(dataSource);
         em.setPackagesToScan("com.springtest.distributedtransfercoordinator.db.seller.models");
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-
-        // Add these properties
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
-        properties.put("hibernate.hbm2ddl.auto", "validate");
-        em.setJpaPropertyMap(properties);
 
         return em;
     }
