@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  escrow-db:
+    image: postgres:15
+    container_name: escrow-postgres
+    environment:
+      POSTGRES_USER: escrow_user
+      POSTGRES_PASSWORD: escrow_password
+      POSTGRES_DB: escrow_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - escrow_data:/var/lib/postgresql/data
+
+  seller-db:
+    image: postgres:15
+    container_name: seller-postgres
+    environment:
+      POSTGRES_USER: seller_user
+      POSTGRES_PASSWORD: seller_password
+      POSTGRES_DB: seller_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - seller_data:/var/lib/postgresql/data
+
+volumes:
+  escrow_data:
+  seller_data:
