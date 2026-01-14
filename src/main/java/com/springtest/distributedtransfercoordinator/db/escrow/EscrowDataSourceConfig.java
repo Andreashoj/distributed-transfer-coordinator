@@ -31,7 +31,7 @@ public class EscrowDataSourceConfig {
     @Value("${spring.datasource.password}")
     private String password;
 
-    @Value("${spring.datasource.seller.driver-class-name}")
+    @Value("${spring.datasource.driver-class-name}")
     private String driverClassName;
 
     @Bean

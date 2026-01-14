@@ -1,9 +1,6 @@
 package com.springtest.distributedtransfercoordinator.db.escrow.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -13,7 +10,10 @@ public class Escrow {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private BigDecimal balance;
+    private BigDecimal amount;
+    @Column(name = "buyer_id")
+    private UUID buyerId;
+    private String status;
 
     public UUID getId() {
         return id;
@@ -23,11 +23,27 @@ public class Escrow {
         this.id = id;
     }
 
-    public BigDecimal getBalance() {
-        return balance;
+    public BigDecimal getAmount() {
+        return amount;
     }
 
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public UUID getBuyerId() {
+        return buyerId;
+    }
+
+    public void setBuyerId(UUID buyerId) {
+        this.buyerId = buyerId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

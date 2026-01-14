@@ -1,0 +1,5 @@
+INSERT INTO escrow (id, amount, buyer_id, status)
+VALUES ('550e8400-e29b-41d4-a716-446655440000', 1000.00, '550e8400-e29b-41d4-a716-446655440001', 'ACTIVE');
+
+INSERT INTO escrow (id, amount, buyer_id, status)
+VALUES ('550e8400-e29b-41d4-a716-446655440002', 2000.00, '550e8400-e29b-41d4-a716-446655440003', 'PENDING');

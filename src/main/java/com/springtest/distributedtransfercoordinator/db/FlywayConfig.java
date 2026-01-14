@@ -20,9 +20,7 @@ public class FlywayConfig {
                 .locations("classpath:db/migration/escrow")
                 .baselineOnMigrate(true)
                 .load();
-        System.out.println("=== RUNNING ESCROW MIGRATIONS ===");
         var result = flyway.migrate();
-        System.out.println("=== ESCROW MIGRATIONS COMPLETED: " + result.migrationsExecuted + " executed ===");
         return flyway;
     }
 

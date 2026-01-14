@@ -1,9 +1,8 @@
 - Create EventBus [X]
 - Create Saga Orchestrator
-
-- Setup
-    - Docker with 2 databases
-
-- Create CLI service wrapper
-    - This should control the flow of the application
-- 
+- Docker with 2 databases [X]
+- Create CLI service wrapper (control flow of the application) [X]
+- Seed sellers and escrows [X]
+- List sellers [X]
+- List escrows [X]
+- List 
