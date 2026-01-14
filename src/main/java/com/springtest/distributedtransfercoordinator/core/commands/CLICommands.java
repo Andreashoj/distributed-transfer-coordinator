@@ -53,26 +53,13 @@ public class CLICommands {
         }
     }
 
-    public static Seller selectSeller(List<Seller> sellers) {
+    public static <T> T selectItem(List<T> items) {
         while (true) {
             var userInput = getInput();
             var selectedSellerIndex = parseInt(userInput) - 1;
 
-            if (selectedSellerIndex >= 0 && selectedSellerIndex < sellers.size()) {
-                return sellers.get(selectedSellerIndex);
-            }
-
-            System.out.println("> Invalid selection, try again.");
-        }
-    }
-
-    public static Escrow selectEscrow(List<Escrow> escrows) {
-        while (true) {
-            var userInput = getInput();
-            var selectedEscrowIndex = parseInt(userInput) - 1;
-
-            if (selectedEscrowIndex >= 0 && selectedEscrowIndex < escrows.size()) {
-                return escrows.get(selectedEscrowIndex);
+            if (selectedSellerIndex >= 0 && selectedSellerIndex < items.size()) {
+                return items.get(selectedSellerIndex);
             }
 
             System.out.println("> Invalid selection, try again.");

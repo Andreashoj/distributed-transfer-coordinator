@@ -45,11 +45,11 @@ public class DistributedTransferCoordinatorApplication {
                         System.out.println("> Which escrow record do you wish to transfer?");
                         var escrows = transferService.getEscrows();
                         CLICommands.showEscrows(escrows);
-                        var selectedEscrow = CLICommands.selectEscrow(escrows);
+                        var selectedEscrow = CLICommands.selectItem(escrows);
 
                         var sellers = transferService.getSellers();
                         CLICommands.showSellers(sellers);
-                        var selectedSeller = CLICommands.selectSeller(sellers);
+                        var selectedSeller = CLICommands.selectItem(sellers);
 
                         transferService.initiateTransfer(selectedEscrow.getId(), selectedSeller.getId(), selectedEscrow.getAmount());
                     }
