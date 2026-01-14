@@ -33,28 +33,29 @@ public class DistributedTransferCoordinatorApplication {
                 var input = CLICommands.getInput();
 
                 switch (input) {
-                    case "1":
+                    case "1" -> {
                         var escrows = transferService.getEscrows();
                         CLICommands.showEscrows(escrows);
-                        break;
-                    case "2":
+                    }
+                    case "2" -> {
                         var sellers = transferService.getSellers();
                         CLICommands.showSellers(sellers);
-                        break;
-                    case "3":
+                    }
+                    case "3" -> {
                         System.out.println("> Which escrow record do you wish to transfer?");
-                        CLICommands.showEscrows(transferService.getEscrows());
+                        var escrows = transferService.getEscrows();
+                        CLICommands.showEscrows(escrows);
+                        var selectedEscrow = CLICommands.selectEscrow(escrows);
 
-                        // Map input to escrow
-                        var selectedEscrow = CLICommands.getInput();
-                        System.out.println("> Now which seller should receive the transfer amount?");
+                        var sellers = transferService.getSellers();
+                        CLICommands.showSellers(sellers);
+                        var selectedSeller = CLICommands.selectSeller(sellers);
 
-                        CLICommands.showSellers(transferService.getSellers());
-                        var selectedSeller = CLICommands.getInput();
-
-                    default:
+                        transferService.initiateTransfer(selectedEscrow.getId(), selectedSeller.getId(), selectedEscrow.getAmount());
+                    }
+                    default -> {
                         System.out.println("> Invalid selection, try again.");
-                        break;
+                    }
                 }
             }
         };

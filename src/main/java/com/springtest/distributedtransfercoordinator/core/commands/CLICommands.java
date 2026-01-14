@@ -2,11 +2,17 @@ package com.springtest.distributedtransfercoordinator.core.commands;
 
 import com.springtest.distributedtransfercoordinator.db.escrow.models.Escrow;
 import com.springtest.distributedtransfercoordinator.db.seller.models.Seller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Scanner;
 
+import static java.lang.Integer.parseInt;
+
 public class CLICommands {
+    private static final Logger log = LoggerFactory.getLogger(CLICommands.class);
+
     public static void WelcomeMessage() {
         System.out.println("> Welcome dear sir");
         System.out.println("> You are in control of transfers between the escrow account and the seller account.");
@@ -44,6 +50,32 @@ public class CLICommands {
                             .toString(),
                     sellers.get(i)
                             .getBalance());
+        }
+    }
+
+    public static Seller selectSeller(List<Seller> sellers) {
+        while (true) {
+            var userInput = getInput();
+            var selectedSellerIndex = parseInt(userInput) - 1;
+
+            if (selectedSellerIndex >= 0 && selectedSellerIndex < sellers.size()) {
+                return sellers.get(selectedSellerIndex);
+            }
+
+            System.out.println("> Invalid selection, try again.");
+        }
+    }
+
+    public static Escrow selectEscrow(List<Escrow> escrows) {
+        while (true) {
+            var userInput = getInput();
+            var selectedEscrowIndex = parseInt(userInput) - 1;
+
+            if (selectedEscrowIndex >= 0 && selectedEscrowIndex < escrows.size()) {
+                return escrows.get(selectedEscrowIndex);
+            }
+
+            System.out.println("> Invalid selection, try again.");
         }
     }
 }
