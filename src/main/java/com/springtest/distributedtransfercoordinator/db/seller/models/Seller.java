@@ -31,4 +31,8 @@ public class Seller {
     public void setId(UUID id) {
         this.id = id;
     }
+
+    public void compensateSale(BigDecimal amount) {
+        balance = balance.add(amount);
+    }
 }

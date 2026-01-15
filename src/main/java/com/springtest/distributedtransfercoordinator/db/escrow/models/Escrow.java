@@ -13,7 +13,8 @@ public class Escrow {
     private BigDecimal amount;
     @Column(name = "buyer_id")
     private UUID buyerId;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private EscrowStatus status;
 
     public UUID getId() {
         return id;
@@ -39,11 +40,23 @@ public class Escrow {
         this.buyerId = buyerId;
     }
 
-    public String getStatus() {
+    public EscrowStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(EscrowStatus status) {
         this.status = status;
+    }
+
+    public void debitAmount(BigDecimal a) {
+        if (a.compareTo(amount) > 0) {
+            throw new IllegalArgumentException("Insufficient balance");
+        }
+
+        amount = amount.subtract(a);
+    }
+
+    public void compensateCredit(BigDecimal a) {
+        amount = amount.add(a);
     }
 }

@@ -4,11 +4,15 @@ import com.springtest.distributedtransfercoordinator.DTO.TransferPayload;
 import com.springtest.distributedtransfercoordinator.core.event.Event;
 import com.springtest.distributedtransfercoordinator.core.event.EventBus;
 import com.springtest.distributedtransfercoordinator.core.event.Listener;
+import com.springtest.distributedtransfercoordinator.db.escrow.models.EscrowStatus;
 import com.springtest.distributedtransfercoordinator.db.escrow.repos.EscrowRepo;
 import com.springtest.distributedtransfercoordinator.db.seller.repos.SellerRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
+
+import java.util.NoSuchElementException;
 
 @Service
 public class TransferSagaOrchestrator implements Listener {
@@ -39,35 +43,90 @@ public class TransferSagaOrchestrator implements Listener {
                     logInfoStatus(event);
                     var debitEscrowEvent = new Event(TransferSagaEventType.DEBIT_ESCROW, event.getSagaId(), event.getPayload());
                     eventBus.addEvent(debitEscrowEvent);
-                } catch (Exception e) {
-                    logErrorStatus(event);
-                    var requestFailedEvent = new Event(TransferSagaEventType.TRANSFER_REQUESTED_FAILED, event.getSagaId(), event.getPayload());
-                    eventBus.addEvent(requestFailedEvent);
+                } catch (NoSuchElementException e) {
+                    logErrorStatus(event, e);
                 }
             }
-            case TRANSFER_REQUESTED_FAILED -> {
-
-            }
             case DEBIT_ESCROW -> {
-                // Get escrow record
-                // Subtract amount from it
-                // Save updated to DB
-                // Ensure escrow amount isn't under 0
-                // If so, publish failed event
-                // If not, proceed
+                try {
+                    var escrow = escrowRepo
+                            .findById(payload.getEscrowId())
+                            .orElseThrow();
+
+                    escrow.debitAmount(payload.getAmount());
+                    escrowRepo.save(escrow);
+
+                    logInfoStatus(event);
+                    var sellerCompensateEvent = new Event(TransferSagaEventType.SELLER_COMPENSATE, event.getSagaId(), payload);
+                    eventBus.addEvent(sellerCompensateEvent);
+                } catch (Exception e) {
+                    logErrorStatus(event, e);
+                    var debitEscrowFailedEvent = new Event(TransferSagaEventType.DEBIT_ESCROW_FAILED, event.getSagaId(), payload);
+                    eventBus.addEvent(debitEscrowFailedEvent);
+                }
             }
-            case DEBIT_ESCROW_FAILED -> {
-                // Ensure escrow amount is reset
-                //
+            case SELLER_COMPENSATE -> {
+                try {
+                    var seller = sellerRepo.findById(payload.getSellerId())
+                            .orElseThrow();
+                    seller.compensateSale(payload.getAmount());
+                    sellerRepo.save(seller);
+                    logInfoStatus(event);
+                    var completeTransfer = new Event(TransferSagaEventType.COMPLETE_TRANSFER, event.getSagaId(), payload);
+                    eventBus.addEvent(completeTransfer);
+                } catch (Exception e) {
+                    logErrorStatus(event, e);
+                    var sellerCompensateFailedEvent = new Event(TransferSagaEventType.SELLER_COMPENSATE_FAILED, event.getSagaId(), payload);
+                    eventBus.addEvent(sellerCompensateFailedEvent);
+                }
+            }
+            case SELLER_COMPENSATE_FAILED -> {
+                try {
+                    compensateEscrow(payload);
+                    logInfoStatus(event);
+                } catch (Exception e) {
+                    logErrorStatus(event, e); // Important log - will need careful monitoring to avoid impartial compensation
+                }
+            }
+            case COMPLETE_TRANSFER -> {
+                try {
+                    var escrow = escrowRepo.findById(payload.getEscrowId())
+                            .orElseThrow();
+                    escrow.setStatus(EscrowStatus.COMPLETE);
+                    escrowRepo.save(escrow);
+                } catch (Exception e) {
+                    var completeTransferFailedEvent = new Event(TransferSagaEventType.SELLER_COMPENSATE_FAILED, event.getSagaId(), payload);
+                    eventBus.addEvent(completeTransferFailedEvent);
+                }
+            }
+            case COMPLETE_TRANSFER_FAILED -> {
+                try {
+                    var escrow = escrowRepo.findById(payload.getEscrowId())
+                            .orElseThrow();
+                    escrow.setStatus(EscrowStatus.FAILED);
+                    escrowRepo.save(escrow);
+                } catch (Exception e) {
+                    logErrorStatus(event, e);
+                }
             }
         }
+    }
+
+    @Retryable(
+            maxRetries = 3
+    )
+    private void compensateEscrow(TransferPayload payload) {
+        var escrow = escrowRepo.findById(payload.getEscrowId())
+                .orElseThrow();
+        escrow.compensateCredit(payload.getAmount());
+        escrowRepo.save(escrow);
     }
 
     public static void logInfoStatus(Event event) {
         log.info("SAGA Transfer ID: {} === EVENT TYPE: {} === SUCCEEDED", event.getSagaId(), event.getEventTypeId());
     }
 
-    public static void logErrorStatus(Event event) {
-        log.error("SAGA Transfer ID: {} === EVENT TYPE: {} === SUCCEEDED", event.getSagaId(), event.getEventTypeId());
+    public static void logErrorStatus(Event event, Exception e) {
+        log.error("SAGA Transfer ID: {} === EVENT TYPE: {} === ERROR: {}", event.getSagaId(), event.getEventTypeId(), e.getMessage(), e);
     }
 }
