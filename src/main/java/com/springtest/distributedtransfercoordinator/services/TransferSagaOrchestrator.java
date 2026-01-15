@@ -6,6 +6,8 @@ import com.springtest.distributedtransfercoordinator.core.event.EventBus;
 import com.springtest.distributedtransfercoordinator.core.event.Listener;
 import com.springtest.distributedtransfercoordinator.db.escrow.models.EscrowStatus;
 import com.springtest.distributedtransfercoordinator.db.escrow.repos.EscrowRepo;
+import com.springtest.distributedtransfercoordinator.db.eventstore.models.SagaEvent;
+import com.springtest.distributedtransfercoordinator.db.eventstore.repos.SagaEventRepo;
 import com.springtest.distributedtransfercoordinator.db.seller.repos.SellerRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +22,13 @@ public class TransferSagaOrchestrator implements Listener {
     final EventBus eventBus;
     final EscrowRepo escrowRepo;
     final SellerRepo sellerRepo;
+    final SagaEventRepo sagaEventRepo;
 
-    public TransferSagaOrchestrator(EventBus eventBus, EscrowRepo escrowRepo, SellerRepo sellerRepo) {
+    public TransferSagaOrchestrator(EventBus eventBus, EscrowRepo escrowRepo, SellerRepo sellerRepo, SagaEventRepo sagaEventRepo) {
         this.eventBus = eventBus;
         this.escrowRepo = escrowRepo;
         this.sellerRepo = sellerRepo;
+        this.sagaEventRepo = sagaEventRepo;
     }
 
     @Override
@@ -39,11 +43,12 @@ public class TransferSagaOrchestrator implements Listener {
                             .orElseThrow();
                     sellerRepo.findById(payload.getSellerId())
                             .orElseThrow();
-
                     logInfoStatus(event);
                     var debitEscrowEvent = new Event(TransferSagaEventType.DEBIT_ESCROW, event.getSagaId(), event.getPayload());
                     eventBus.addEvent(debitEscrowEvent);
                 } catch (NoSuchElementException e) {
+                    var trasnferRequestFailedEvent = new Event(TransferSagaEventType.TRANSFER_REQUESTED_FAILED, event.getSagaId(), payload);
+                    eventBus.addEvent(trasnferRequestFailedEvent);
                     logErrorStatus(event, e);
                 }
             }
@@ -122,11 +127,17 @@ public class TransferSagaOrchestrator implements Listener {
         escrowRepo.save(escrow);
     }
 
-    public static void logInfoStatus(Event event) {
+    public void logInfoStatus(Event event) {
         log.info("SAGA Transfer ID: {} === EVENT TYPE: {} === SUCCEEDED", event.getSagaId(), event.getEventTypeId());
+        var payload = (TransferPayload) event.getPayload();
+        var sagaEventLog = new SagaEvent(event.getEventTypeId(), payload);
+        sagaEventRepo.save(sagaEventLog);
     }
 
-    public static void logErrorStatus(Event event, Exception e) {
+    public void logErrorStatus(Event event, Exception e) {
         log.error("SAGA Transfer ID: {} === EVENT TYPE: {} === ERROR: {}", event.getSagaId(), event.getEventTypeId(), e.getMessage(), e);
+        var payload = (TransferPayload) event.getPayload();
+        var sagaEventLog = new SagaEvent(event.getEventTypeId(), payload);
+        sagaEventRepo.save(sagaEventLog);
     }
 }

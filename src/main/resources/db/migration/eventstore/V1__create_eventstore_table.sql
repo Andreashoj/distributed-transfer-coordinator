@@ -1,7 +1,7 @@
 CREATE TABLE saga_event
 (
     id                UUID NOT NULL,
-    event_type        SMALLINT,
+    event_type        VARCHAR(255),
     created_at        TIMESTAMP WITHOUT TIME ZONE,
     payload_escrow_id UUID,
     payload_seller_id UUID,

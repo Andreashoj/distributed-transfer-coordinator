@@ -8,20 +8,23 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(name = "saga_event")
 public class SagaEvent {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @Embedded
     private TransferPayload payload;
+    @Column(name = "event_type")
+    @Enumerated(EnumType.STRING)
     private TransferSagaEventType eventType;
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public SagaEvent() {
     }
 
-    public SagaEvent(UUID id, TransferSagaEventType eventType, UUID sagaId, UUID escrowId, UUID sellerId, LocalDateTime createdAt, TransferPayload payload) {
-        this.id = id;
+    public SagaEvent(TransferSagaEventType eventType, TransferPayload payload) {
         this.eventType = eventType;
         this.payload = payload;
     }
