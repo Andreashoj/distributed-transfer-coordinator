@@ -36,10 +36,18 @@ public class DistributedTransferCoordinatorApplication {
                     case "1" -> {
                         var escrows = transferService.getEscrows();
                         CLICommands.showEscrows(escrows);
+
+                        System.out.println("> See the balance of an escrow by inputting their number");
+                        var selectedEscrow = CLICommands.selectItem(escrows);
+
+
                     }
                     case "2" -> {
                         var sellers = transferService.getSellers();
                         CLICommands.showSellers(sellers);
+
+                        System.out.println("> See the balance of a seller by inputting their number");
+                        var selectedSeller = CLICommands.selectItem(sellers);
                     }
                     case "3" -> {
                         System.out.println("> Which escrow record do you wish to transfer?");

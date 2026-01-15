@@ -1,8 +1,11 @@
 package com.springtest.distributedtransfercoordinator.DTO;
 
+import jakarta.persistence.Embeddable;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@Embeddable
 public class TransferPayload {
     private UUID escrowId;
     private UUID sellerId;
@@ -12,6 +15,9 @@ public class TransferPayload {
         this.escrowId = escrowId;
         this.sellerId = sellerId;
         this.amount = amount;
+    }
+
+    public TransferPayload() {
     }
 
     public UUID getEscrowId() {

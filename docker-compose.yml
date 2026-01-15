@@ -25,6 +25,19 @@ services:
     volumes:
       - seller_data:/var/lib/postgresql/data
 
+  eventstore-db:
+    image: postgres:15
+    container_name: eventstore-postgres
+    environment:
+      POSTGRES_USER: eventstore_user
+      POSTGRES_PASSWORD: eventstore_password
+      POSTGRES_DB: eventstore_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - eventstore_data:/var/lib/postgresql/data
+
 volumes:
   escrow_data:
   seller_data:
+  eventstore_data:
